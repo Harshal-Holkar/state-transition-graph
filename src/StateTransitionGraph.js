@@ -48,44 +48,51 @@ const createInitialNodes = (lifecycle) => {
 };
 
 const createEdges = (nodes) => {
-  const edges = [];
-  const nodeMap = new Map();
-
-  nodes.forEach((node) => nodeMap.set(node.id, node));
-
-  nodes.forEach((node, index) => {
-    if (index === 0) return;
-
-    const prevNodeInSameBranch = nodes
-      .slice(0, index)
-      .reverse()
-      .find((n) => n.data.branch === node.data.branch);
-
-    if (prevNodeInSameBranch) {
-      edges.push({
-        id: `edge-${index}`,
-        source: prevNodeInSameBranch.id,
-        target: node.id,
-        type: 'smoothstep',
-      });
-    } else {
-      const prevNodeInNullBranch = nodes
-        .slice(0, index)
-        .reverse()
-        .find((n) => !n.data.branch);
-
-      if (prevNodeInNullBranch) {
-        edges.push({
-          id: `edge-${index}`,
-          source: prevNodeInNullBranch.id,
-          target: node.id,
-        });
+    const edges = [];
+    const branchMap = new Map();
+    let lastNullBranchNode = null;
+  
+    nodes.forEach((node, index) => {
+      if (index === 0) {
+        if (node.data.branch) {
+          branchMap.set(node.data.branch, node);
+        } else {
+          lastNullBranchNode = node;
+        }
+        return;
       }
-    }
-  });
+  
+      if (node.data.branch) {
+        let prevNodeInSameBranch = branchMap.get(node.data.branch);
 
-  return edges;
-};
+        if(!prevNodeInSameBranch)
+            prevNodeInSameBranch = lastNullBranchNode
+  
+        if (prevNodeInSameBranch) {
+          edges.push({
+            id: `edge-${index}`,
+            source: prevNodeInSameBranch.id,
+            target: node.id,
+            type: 'smoothstep',
+          });
+        }
+
+        branchMap.set(node.data.branch, node);
+      } else {
+        if (lastNullBranchNode) {
+          edges.push({
+            id: `edge-${index}`,
+            source: lastNullBranchNode.id,
+            target: node.id,
+          });
+        }
+        lastNullBranchNode = node;
+      }
+    });
+  
+    return edges;
+  };
+  
 
 const LayoutFlow = () => {
   const { fitView } = useReactFlow();
@@ -159,7 +166,6 @@ const LayoutFlow = () => {
   );
 };
 
-// Main export function
 export default function App() {
   return (
     <ReactFlowProvider>
