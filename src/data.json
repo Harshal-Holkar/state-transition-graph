@@ -1,0 +1,124 @@
+{
+    "lifecyle": [
+        {
+            "state": "New",
+            "time": "January 1, 2024 01:01:01",
+            "branch": null
+        },
+        {
+            "state": "Ready For Development",
+            "time": "January 2, 2024 01:01:01",
+            "branch": null
+        },
+        {
+            "state": "Pull Request Created",
+            "time": "January 3, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Pull Request Approved",
+            "time": "January 4, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Pull Request Created",
+            "time": "January 4, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Trunk Build Created",
+            "time": "January 6, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Pull Request Approved",
+            "time": "January 7, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Trunk Build Created",
+            "time": "January 7, 2024 04:04:04",
+            "branch": "Backend"
+        },
+        {
+            "state": "Trunk Build Tested",
+            "time": "January 8, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Trunk Build Tested",
+            "time": "January 8, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Release Build Created",
+            "time": "January 9, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Release Build Created",
+            "time": "January 9, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Release Build Tested",
+            "time": "January 11, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Release Build Tested",
+            "time": "January 11, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Release Build Deployed",
+            "time": "January 12, 2024 01:01:01",
+            "branch": "Frontend"
+        },
+        {
+            "state": "Release Build Deployed",
+            "time": "January 12, 2024 02:02:02",
+            "branch": "Backend"
+        },
+        {
+            "state": "Release Build Deployed",
+            "time": "January 12, 2024 01:01:01",
+            "branch": "tt"
+        },
+        {
+            "state": "Release Build Deployed",
+            "time": "January 12, 2024 02:02:02",
+            "branch": "tt"
+        },
+        {
+            "state": "End",
+            "time": "January 13, 2024 02:02:02",
+            "branch": null
+        },
+        {
+            "state": "End",
+            "time": "January 13, 2024 02:02:02",
+            "branch": "kkk"
+        },
+        {
+            "state": "EndEnd",
+            "time": "January 13, 2024 02:02:02",
+            "branch": null
+        },
+        {
+            "state": "End",
+            "time": "January 13, 2024 02:02:02",
+            "branch": "ppk"
+        },
+        {
+            "state": "End",
+            "time": "January 13, 2024 02:02:02",
+            "branch": "kk"
+        },
+        {
+            "state": "EndEnd",
+            "time": "January 13, 2024 02:02:02",
+            "branch": null
+        }
+    ]
+}
