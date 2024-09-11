@@ -10,13 +10,11 @@ const initialNodes = data.map((item, index) => ({
 const createEdges = (nodes) => {
   const edges = [];
   const nodeMap = new Map();
-  
-  // Map node IDs to node objects for quick lookup
+
   nodes.forEach((node) => nodeMap.set(node.id, node));
 
-  // Iterate through nodes to create edges
   nodes.forEach((node, index) => {
-    if (index === 0) return; // Skip the first node as it has no previous node
+    if (index === 0) return; 
 
     const prevNodeInSameBranch = nodes
       .slice(0, index)

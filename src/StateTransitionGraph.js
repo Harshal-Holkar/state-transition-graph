@@ -30,11 +30,7 @@ const getLayoutedElements = (nodes, edges, options) => {
 
       return { ...node, position: { x, y } };
     }),
-    edges: edges.map((edge) => ({
-      ...edge,
-      type: 'beizer',
-      style: { strokeWidth: 1.5 },
-    })),
+    edges: edges
   };
 };
 
@@ -43,56 +39,86 @@ const createInitialNodes = (lifecycle) => {
     id: `node-${index}`,
     type: 'customNode',
     position: { x: 0, y: 0 },
-    data: { state: item.state, time: item.time, branch: item.branch },
+    data: { state: item.state, time: Array.isArray(item.time) ? item.time : [item.time], branch: item.branch, isActive: true,},
   }));
 };
 
 const createEdges = (nodes) => {
-    const edges = [];
-    const branchMap = new Map();
-    let lastNullBranchNode = null;
-  
-    nodes.forEach((node, index) => {
-      if (index === 0) {
-        if (node.data.branch) {
-          branchMap.set(node.data.branch, node);
-        } else {
-          lastNullBranchNode = node;
-        }
-        return;
-      }
-  
-      if (node.data.branch) {
-        let prevNodeInSameBranch = branchMap.get(node.data.branch);
+  const edges = [];
+  const branchMap = new Map();
+  const stateMap = new Map(); // To track nodes by state within branches
+  let lastNullBranchNode = null;
 
-        if(!prevNodeInSameBranch)
-            prevNodeInSameBranch = lastNullBranchNode
-  
-        if (prevNodeInSameBranch) {
+  nodes.forEach((node, index) => {
+    const { branch, state } = node.data;
+
+    if (index === 0) {
+      if (branch) {
+        branchMap.set(branch, node);
+        stateMap.set(`${branch}-${state}`, node);
+      } else {
+        lastNullBranchNode = node;
+      }
+      return;
+    }
+
+    if (branch) {
+      let prevNodeInSameBranch = branchMap.get(branch);
+      let reverseEdgeNode = stateMap.get(`${branch}-${state}`);
+
+      if (!prevNodeInSameBranch) {
+        prevNodeInSameBranch = lastNullBranchNode;
+      }
+
+      if (prevNodeInSameBranch) {
+        if (reverseEdgeNode) {
+          // reverse edge
+          edges.push({
+            id: `reverse-edge-${index}`,
+            source: prevNodeInSameBranch.id,
+            target: reverseEdgeNode.id,
+            type: 'bazier',
+            style: { stroke: 'red', strokeWidth: 5 },
+            animated: true,
+          });
+          reverseEdgeNode.data.time = [...new Set([...reverseEdgeNode.data.time, ...node.data.time])];
+          // hide current node 
+          node.data.isActive = false
+        } else {
           edges.push({
             id: `edge-${index}`,
             source: prevNodeInSameBranch.id,
             target: node.id,
-            type: 'smoothstep',
+            type: 'bazier',
+            style: { stroke: 'black', strokeWidth: 1.5 }, // Ensure default styling
+            animated: true,
           });
+          branchMap.set(branch, node);
         }
-
-        branchMap.set(node.data.branch, node);
-      } else {
-        if (lastNullBranchNode) {
-          edges.push({
-            id: `edge-${index}`,
-            source: lastNullBranchNode.id,
-            target: node.id,
-          });
-        }
-        lastNullBranchNode = node;
       }
-    });
-  
-    return edges;
-  };
-  
+
+      // Update state map
+      if (!stateMap.has(`${branch}-${state}`)) {
+        stateMap.set(`${branch}-${state}`, node);
+      }
+    } else {
+      if (lastNullBranchNode) {
+        edges.push({
+          id: `edge-${index}`,
+          source: lastNullBranchNode.id,
+          target: node.id,
+          type: 'bazier',
+          style: { stroke: 'black', strokeWidth: 1.5 }, // Ensure default styling
+          animated: true,
+        });
+      }
+      lastNullBranchNode = node;
+    }
+  });
+
+  return edges;
+};
+
 
 const LayoutFlow = () => {
   const { fitView } = useReactFlow();
@@ -104,11 +130,15 @@ const LayoutFlow = () => {
       if (nodes.length > 0 && edges.length > 0) {
         const layouted = getLayoutedElements(nodes, edges, { direction });
 
-        setNodes([...layouted.nodes]);
+        // include only active ones
+        const activeNodes = layouted.nodes.filter(node => node.data.isActive);
+
+        setNodes([...activeNodes]);
         setEdges([...layouted.edges]);
 
         window.requestAnimationFrame(() => {
           fitView();
+          setEdges((edges) => [...edges]);
         });
       }
     },
