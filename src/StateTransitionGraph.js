@@ -34,12 +34,18 @@ const getLayoutedElements = (nodes, edges, options) => {
   };
 };
 
-const createInitialNodes = (lifecycle) => {
-  return lifecycle.map((item, index) => ({
+const createInitialNodes = (data) => {
+  return data.map((item, index) => ({
     id: `node-${index}`,
     type: 'customNode',
     position: { x: 0, y: 0 },
-    data: { state: item.state, time: Array.isArray(item.time) ? item.time : [item.time], branch: item.branch, isActive: true,},
+    data: {
+      milestone: item.milestone,
+      timestamp: Array.isArray(item.timestamp) ? item.timestamp : [item.timestamp],
+      repo: item.repo,
+      additional_info: item.additional_info, // Include all variables for future use
+      isActive: true,
+    },
   }));
 };
 
@@ -50,56 +56,56 @@ const createEdges = (nodes) => {
   let lastNullBranchNode = null;
 
   nodes.forEach((node, index) => {
-    const { branch, state } = node.data;
+    const { repo, milestone } = node.data;
 
     if (index === 0) {
-      if (branch) {
-        branchMap.set(branch, node);
-        stateMap.set(`${branch}-${state}`, node);
+      if (repo) {
+        branchMap.set(repo, node);
+        stateMap.set(`${repo}-${milestone}`, node);
       } else {
         lastNullBranchNode = node;
       }
       return;
     }
 
-    if (branch) {
-      let prevNodeInSameBranch = branchMap.get(branch);
-      let reverseEdgeNode = stateMap.get(`${branch}-${state}`);
+    if (repo) {
+      let prevNodeInSameRepo = branchMap.get(repo);
+      let reverseEdgeNode = stateMap.get(`${repo}-${milestone}`);
 
-      if (!prevNodeInSameBranch) {
-        prevNodeInSameBranch = lastNullBranchNode;
+      if (!prevNodeInSameRepo) {
+        prevNodeInSameRepo = lastNullBranchNode;
       }
 
-      if (prevNodeInSameBranch) {
+      if (prevNodeInSameRepo) {
         if (reverseEdgeNode) {
           // reverse edge
           edges.push({
             id: `reverse-edge-${index}`,
-            source: prevNodeInSameBranch.id,
+            source: prevNodeInSameRepo.id,
             target: reverseEdgeNode.id,
-            type: 'bazier',
+            type: 'straight',
             style: { stroke: 'red', strokeWidth: 5 },
-            animated: true,
+            // animated: true,
           });
-          reverseEdgeNode.data.time = [...new Set([...reverseEdgeNode.data.time, ...node.data.time])];
+          reverseEdgeNode.data.timestamp = [...new Set([...reverseEdgeNode.data.timestamp, ...node.data.timestamp])];
           // hide current node 
-          node.data.isActive = false
+          node.data.isActive = false;
         } else {
           edges.push({
             id: `edge-${index}`,
-            source: prevNodeInSameBranch.id,
+            source: prevNodeInSameRepo.id,
             target: node.id,
-            type: 'bazier',
-            style: { stroke: 'black', strokeWidth: 1.5 }, // Ensure default styling
-            animated: true,
+            type: 'straight',
+            style: { stroke: 'black', strokeWidth: 0.5 }, // Ensure default styling
+            // animated: true,
           });
-          branchMap.set(branch, node);
+          branchMap.set(repo, node);
         }
       }
 
       // Update state map
-      if (!stateMap.has(`${branch}-${state}`)) {
-        stateMap.set(`${branch}-${state}`, node);
+      if (!stateMap.has(`${repo}-${milestone}`)) {
+        stateMap.set(`${repo}-${milestone}`, node);
       }
     } else {
       if (lastNullBranchNode) {
@@ -107,9 +113,9 @@ const createEdges = (nodes) => {
           id: `edge-${index}`,
           source: lastNullBranchNode.id,
           target: node.id,
-          type: 'bazier',
-          style: { stroke: 'black', strokeWidth: 1.5 }, // Ensure default styling
-          animated: true,
+          type: 'straight',
+          style: { stroke: 'black', strokeWidth: 0.5 }, // Ensure default styling
+          // animated: true,
         });
       }
       lastNullBranchNode = node;
@@ -118,7 +124,6 @@ const createEdges = (nodes) => {
 
   return edges;
 };
-
 
 const LayoutFlow = () => {
   const { fitView } = useReactFlow();
@@ -152,9 +157,9 @@ const LayoutFlow = () => {
       reader.onload = (e) => {
         try {
           const json = JSON.parse(e.target.result);
-          const lifecycle = json.lifecyle;
+          const data = json;
 
-          const newNodes = createInitialNodes(lifecycle);
+          const newNodes = createInitialNodes(data);
           const newEdges = createEdges(newNodes);
 
           setNodes(newNodes);
