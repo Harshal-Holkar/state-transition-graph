@@ -1,6 +1,6 @@
-import {React, useCallback} from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import Dagre from '@dagrejs/dagre';
-import {ReactFlow, ReactFlowProvider, Panel, useNodesState, useEdgesState, useReactFlow, MiniMap, Controls} from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Panel, useNodesState, useEdgesState, useReactFlow, MiniMap, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 
@@ -60,32 +60,28 @@ const createEdges = (nodes) => {
   const processedNodes = [];
 
   // get checker
-  const extractChecker = (additionalInfo) => {  
+  const extractChecker = (additionalInfo) => {
     const regex = /\d+\.\d+\.\d+-\d{4}-\d{2}-\d{2}-\w+/;
     const match = additionalInfo.match(regex);
 
     if (match) {
-        const versionString = match[0];
-        const subRegex = /\d+\.\d+\.(.*)/;
-        const subMatch = versionString.match(subRegex);
+      const versionString = match[0];
+      const subRegex = /\d+\.\d+\.(.*)/;
+      const subMatch = versionString.match(subRegex);
 
-        if (subMatch) {
-            return subMatch[1];
-        } else {
-            return null;
-        }
+      return subMatch ? subMatch[1] : null;
     } else {
-        return null;
+      return null;
     }
-};
+  };
 
   // get previous item from processed nodes
   const findPreviousItem = (currentNode) => {
-    let checker = extractChecker(currentNode.data.additional_info);
-    
+    const checker = extractChecker(currentNode.data.additional_info);
+
     for (const node of processedNodes) {
       if (node.data.milestone.endsWith('Build') &&
-          node.data.artifact.includes(checker)) {
+        node.data.artifact.includes(checker)) {
         return node;
       }
     }
@@ -93,14 +89,13 @@ const createEdges = (nodes) => {
   };
 
   nodes.forEach((node, index) => {
-    let { repo, milestone} = node.data;
+    let { repo, milestone } = node.data;
 
     // Handle milestone with suffix '* Deployment'
     if (milestone.endsWith('Deployment')) {
       const previousItem = findPreviousItem(node);
       if (previousItem) {
         repo = previousItem.data.repo;
-        // node.data.repo = previousItem.data.repo;
       }
     }
 
@@ -124,30 +119,14 @@ const createEdges = (nodes) => {
       }
 
       if (prevNodeInSameRepo) {
-        // if (reverseEdgeNode) {
-        //   // reverse edge
-        //   edges.push({
-        //     id: `reverse-edge-${index}`,
-        //     source: prevNodeInSameRepo.id,
-        //     target: reverseEdgeNode.id,
-        //     type: 'straight',
-        //     style: { stroke: 'red', strokeWidth: 5 },
-        //     // animated: true,
-        //   });
-        //   reverseEdgeNode.data.timestamp = [...new Set([...reverseEdgeNode.data.timestamp, ...node.data.timestamp])];
-        //   // hide current node 
-        //   node.data.isActive = false;
-        // } else {
-          edges.push({
-            id: `edge-${index}`,
-            source: prevNodeInSameRepo.id,
-            target: node.id,
-            type: 'straight',
-            style: { stroke: 'black', strokeWidth: 0.5 }, // Ensure default styling
-            // animated: true,
-          });
-          branchMap.set(repo, node);
-        // }
+        edges.push({
+          id: `edge-${index}`,
+          source: prevNodeInSameRepo.id,
+          target: node.id,
+          type: 'straight',
+          style: { stroke: 'black', strokeWidth: 0.5 }, // Ensure default styling
+        });
+        branchMap.set(repo, node);
       }
 
       // Update state map
@@ -161,14 +140,13 @@ const createEdges = (nodes) => {
           source: lastNullBranchNode.id,
           target: node.id,
           type: 'straight',
-          style: { stroke: 'black', strokeWidth: 0.5 }, // Ensure default styling
-          // animated: true,
+          style: { stroke: 'black', strokeWidth: 0.5 },
         });
       }
       lastNullBranchNode = node;
     }
-    
-    //  current node to the processed
+
+    // Add current to the processed list
     processedNodes.push(node);
   });
 
@@ -179,79 +157,125 @@ const LayoutFlow = () => {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [apiInput, setApiInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const onLayout = useCallback(
     (direction) => {
       if (nodes.length > 0 && edges.length > 0) {
         const layouted = getLayoutedElements(nodes, edges, { direction });
 
-        // include only active ones
+        // Include only active nodes
         const activeNodes = layouted.nodes.filter(node => node.data.isActive);
 
         setNodes([...activeNodes]);
         setEdges([...layouted.edges]);
 
         window.requestAnimationFrame(() => {
-          fitView({zoom : 1});
           setEdges((edges) => [...edges]);
         });
       }
     },
-    [nodes, edges, fitView]
+    [nodes, edges]
   );
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const json = JSON.parse(e.target.result);
-          const data = json;
+  useEffect(() => {
+    if (nodes.length > 0 && edges.length > 0) {
+      const timer = setTimeout(() => {
+        onLayout('TB'); // Trigger vertical layout
+      }, 1000);
 
-          const newNodes = createInitialNodes(data);
-          const newEdges = createEdges(newNodes);
+      return () => clearTimeout(timer);
+    }
+  }, [nodes, edges, onLayout]);
 
-          setNodes(newNodes);
-          setEdges(newEdges);
-        } catch (err) {
-          console.error('Error parsing JSON file:', err);
-          alert('Invalid file');
-        }
-      };
-      reader.readAsText(file);
+  const handleApiCall = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`https://pa.talentsavvy.com/pa/api/v1/workItems/lifecycle/${apiInput}`);
+      const result = await response.json();
+      if (result.status === 200) {
+        const data = result.data;
+        const newNodes = createInitialNodes(data);
+        const newEdges = createEdges(newNodes);
+        setNodes(newNodes);
+        setEdges(newEdges);
+      } else {
+        alert(`API error: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`Error fetching API data: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleApiCall();
     }
   };
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <input
-        type="file"
-        accept=".json"
-        onChange={handleFileChange}
-        style={{ marginBottom: '10px' }}
-      />
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        fitView
-        nodeTypes={{ customNode: CustomNode }}
-        style={{ width: '100%', flexGrow: 1 }}
-      >
-        <MiniMap />
-        <Controls />
-        <Panel position="top-right">
+    <div>
+      <div style={{ height: '12vh', display: 'flex', flexDirection: 'column', background:'#b2ffb5', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',}}></div>
+      <div style={{ height: '88vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'absolute', top: '20px', left: '30%', zIndex: 1000 }}>
+          <input
+            type="text"
+            value={apiInput}
+            onChange={(e) => setApiInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter token number"
+            style={{
+              marginRight: '10px',
+              width: '400px',
+              height: '35px',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ddd'
+            }}
+          />
+          <button
+            onClick={handleApiCall}
+            disabled={loading}
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              height: '40px',
+              border: 'none',
+              background: '#007bff',
+              color: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            {loading ? 'Loading...' : 'Fetch Data'}
+          </button>
+        </div>
+
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodesDraggable={false}
+          fitView
+          nodeTypes={{ customNode: CustomNode }}
+          style={{ width: '100%', flexGrow: 1 }}
+        >
+          {/* <MiniMap /> */}
+          <Controls />
+          {/* <Panel position="top-right">
           <button onClick={() => onLayout('TB')}>Vertical Layout</button>
           <button onClick={() => onLayout('LR')}>Horizontal Layout</button>
-        </Panel>
-      </ReactFlow>
+        </Panel> */}
+        </ReactFlow>
+      </div>
     </div>
   );
 };
 
-export default function App() {
+export default function ItemJourney() {
   return (
     <ReactFlowProvider>
       <LayoutFlow />
