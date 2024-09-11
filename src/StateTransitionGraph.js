@@ -7,7 +7,7 @@ import CustomNode from './CustomNode';
 // Function to compute layouted nodes and edges
 const getLayoutedElements = (nodes, edges, options) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: options.direction });
+  g.setGraph({ rankdir: options.direction, ranksep: 75, nodesep: 75 });
 
   // Add nodes and edges to the Dagre graph
   nodes.forEach((node) =>
@@ -43,7 +43,8 @@ const createInitialNodes = (data) => {
       milestone: item.milestone,
       timestamp: Array.isArray(item.timestamp) ? item.timestamp : [item.timestamp],
       repo: item.repo,
-      additional_info: item.additional_info, // Include all variables for future use
+      artifact: item.artifact,
+      additional_info: item.additional_info,
       isActive: true,
     },
   }));
@@ -55,8 +56,53 @@ const createEdges = (nodes) => {
   const stateMap = new Map(); // To track nodes by state within branches
   let lastNullBranchNode = null;
 
+  // Array to keep track of processed nodes
+  const processedNodes = [];
+
+  // get checker
+  const extractChecker = (additionalInfo) => {  
+    const regex = /\d+\.\d+\.\d+-\d{4}-\d{2}-\d{2}-\w+/;
+    const match = additionalInfo.match(regex);
+
+    if (match) {
+        const versionString = match[0];
+        const subRegex = /\d+\.\d+\.(.*)/;
+        const subMatch = versionString.match(subRegex);
+
+        if (subMatch) {
+            return subMatch[1];
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
+
+  // get previous item from processed nodes
+  const findPreviousItem = (currentNode) => {
+    let checker = extractChecker(currentNode.data.additional_info);
+    
+    for (const node of processedNodes) {
+      if (node.data.milestone.endsWith('Build') &&
+          node.data.artifact.includes(checker)) {
+        return node;
+      }
+    }
+    return null;
+  };
+
   nodes.forEach((node, index) => {
-    const { repo, milestone } = node.data;
+    let { repo, milestone} = node.data;
+
+    // Handle milestone with suffix '* Deployment'
+    if (milestone.endsWith('Deployment')) {
+      const previousItem = findPreviousItem(node);
+      if (previousItem) {
+        repo = previousItem.data.repo;
+        // node.data.repo = previousItem.data.repo;
+      }
+    }
 
     if (index === 0) {
       if (repo) {
@@ -65,6 +111,7 @@ const createEdges = (nodes) => {
       } else {
         lastNullBranchNode = node;
       }
+      processedNodes.push(node); // Add the first node to the processed list
       return;
     }
 
@@ -77,20 +124,20 @@ const createEdges = (nodes) => {
       }
 
       if (prevNodeInSameRepo) {
-        if (reverseEdgeNode) {
-          // reverse edge
-          edges.push({
-            id: `reverse-edge-${index}`,
-            source: prevNodeInSameRepo.id,
-            target: reverseEdgeNode.id,
-            type: 'straight',
-            style: { stroke: 'red', strokeWidth: 5 },
-            // animated: true,
-          });
-          reverseEdgeNode.data.timestamp = [...new Set([...reverseEdgeNode.data.timestamp, ...node.data.timestamp])];
-          // hide current node 
-          node.data.isActive = false;
-        } else {
+        // if (reverseEdgeNode) {
+        //   // reverse edge
+        //   edges.push({
+        //     id: `reverse-edge-${index}`,
+        //     source: prevNodeInSameRepo.id,
+        //     target: reverseEdgeNode.id,
+        //     type: 'straight',
+        //     style: { stroke: 'red', strokeWidth: 5 },
+        //     // animated: true,
+        //   });
+        //   reverseEdgeNode.data.timestamp = [...new Set([...reverseEdgeNode.data.timestamp, ...node.data.timestamp])];
+        //   // hide current node 
+        //   node.data.isActive = false;
+        // } else {
           edges.push({
             id: `edge-${index}`,
             source: prevNodeInSameRepo.id,
@@ -100,7 +147,7 @@ const createEdges = (nodes) => {
             // animated: true,
           });
           branchMap.set(repo, node);
-        }
+        // }
       }
 
       // Update state map
@@ -120,6 +167,9 @@ const createEdges = (nodes) => {
       }
       lastNullBranchNode = node;
     }
+    
+    //  current node to the processed
+    processedNodes.push(node);
   });
 
   return edges;
@@ -142,7 +192,7 @@ const LayoutFlow = () => {
         setEdges([...layouted.edges]);
 
         window.requestAnimationFrame(() => {
-          fitView();
+          fitView({zoom : 1});
           setEdges((edges) => [...edges]);
         });
       }

@@ -1,135 +1,16 @@
 [
     {
         "milestone": "Work Item Creation",
-        "timestamp": "2024-07-05T10:20:47.177Z",
-        "artifact": "Work Item 2237",
+        "timestamp": "2024-07-19T05:17:17.030Z",
+        "artifact": "Work Item 2258",
         "repo": null,
-        "additional_info": "<div>Currently, the Team Management page shows the Groups that the logged-in user can view in the alphabetical order, and shows the first Group in this list by default. The user should be allowed to select a default Group that is displayed when the user logs in and goes to the Team Management page. </div><div><br> </div><div>In the User Settings dialog, if the logged-in user can view (*) one or more Groups, show a drop-down list of these Groups and allow the user to select one of these Groups as the default Group.&nbsp; </div><div><br> </div><div>(*) &quot;View&quot; here means that the user has View or Edit or Own permissions on the group. </div>"
-    },
-    {
-        "milestone": "Pull Request Creation",
-        "timestamp": "2024-07-12T11:56:52.000Z",
-        "artifact": "PR 1966488741",
-        "repo": "TalentSavvy-com/talentsavvy-fe",
-        "additional_info": "AB#2237"
-    },
-    {
-        "milestone": "Pull Request Creation",
-        "timestamp": "2024-07-12T11:58:13.000Z",
-        "artifact": "PR 1966490620",
-        "repo": "TalentSavvy-com/talentsavvy-be-core",
-        "additional_info": "AB#2237 API : Save default Group ID per user"
-    },
-    {
-        "milestone": "Code Review",
-        "timestamp": "2024-07-13T11:55:07.000Z",
-        "artifact": "PR Review 2176241471",
-        "repo": "TalentSavvy-com/talentsavvy-be-core",
-        "additional_info": "vinay-at-talentsavvy"
-    },
-    {
-        "milestone": "Trunk Commit",
-        "timestamp": "2024-07-13T12:17:39.000Z",
-        "artifact": "Commit ",
-        "repo": "TalentSavvy-com/talentsavvy-be-core",
         "additional_info": ""
     },
     {
-        "milestone": "Trunk Build",
-        "timestamp": "2024-07-13T12:36:40.000Z",
-        "artifact": "Build 507-2024-07-13-bc70d0a",
-        "repo": "TalentSavvy-com/talentsavvy-be-core",
-        "additional_info": "talentsavvy-be-core-main"
-    },
-    {
-        "milestone": "Dev Deployment",
-        "timestamp": "2024-07-13T12:37:08.000Z",
-        "artifact": "Deployment Deployments-4829",
-        "repo": "Projects-10",
-        "additional_info": "Deploy to Dev succeeded for talentsavvy-core release 0.0.507-2024-07-13-bc70d0a to Dev"
-    },
-    {
-        "milestone": "QA Deployment",
-        "timestamp": "2024-07-13T19:30:42.000Z",
-        "artifact": "Deployment Deployments-4830",
-        "repo": "Projects-10",
-        "additional_info": "Deploy to QA succeeded for talentsavvy-core release 0.0.507-2024-07-13-bc70d0a to QA"
-    },
-    {
-        "milestone": "Code Review",
-        "timestamp": "2024-07-15T01:12:04.000Z",
-        "artifact": "PR Review 2176759540",
-        "repo": "TalentSavvy-com/talentsavvy-fe",
-        "additional_info": "vinay-at-talentsavvy"
-    },
-    {
-        "milestone": "Trunk Commit",
-        "timestamp": "2024-07-15T01:12:10.000Z",
-        "artifact": "Commit ",
-        "repo": "TalentSavvy-com/talentsavvy-fe",
-        "additional_info": ""
-    },
-    {
-        "milestone": "Trunk Build",
-        "timestamp": "2024-07-15T01:23:58.000Z",
-        "artifact": "Build 752-2024-07-15-53a08b0",
-        "repo": "TalentSavvy-com/talentsavvy-fe",
-        "additional_info": "talentsavvy-fe-main"
-    },
-    {
-        "milestone": "Dev Deployment",
-        "timestamp": "2024-07-15T01:24:27.000Z",
-        "artifact": "Deployment Deployments-4832",
-        "repo": "Projects-6",
-        "additional_info": "Deploy to Dev succeeded for talentsavvy-fe release 0.0.752-2024-07-15-53a08b0 to Dev"
-    },
-    {
-        "milestone": "QA Deployment",
-        "timestamp": "2024-07-15T03:37:37.000Z",
-        "artifact": "Deployment Deployments-4833",
-        "repo": "Projects-6",
-        "additional_info": "Deploy to QA succeeded for talentsavvy-fe release 0.0.752-2024-07-15-53a08b0 to QA"
-    },
-    {
-        "milestone": "Release Build",
-        "timestamp": "2024-07-22T08:09:03.000Z",
-        "artifact": "Build 70-2024-07-22-8ab0895",
-        "repo": "TalentSavvy-com/talentsavvy-be-core",
-        "additional_info": "talentsavvy-be-core-release"
-    },
-    {
-        "milestone": "Stage Deployment",
-        "timestamp": "2024-07-22T08:09:11.000Z",
-        "artifact": "Deployment Deployments-4927",
-        "repo": "Projects-10",
-        "additional_info": "Deploy to Stage succeeded for talentsavvy-core release 1.11.70-2024-07-22-8ab0895 to Stage"
-    },
-    {
-        "milestone": "Production Deployment",
-        "timestamp": "2024-07-22T08:54:26.000Z",
-        "artifact": "Deployment Deployments-4929",
-        "repo": "Projects-10",
-        "additional_info": "Deploy to Prod succeeded for talentsavvy-core release 1.11.70-2024-07-22-8ab0895 to Prod"
-    },
-    {
-        "milestone": "Release Build",
-        "timestamp": "2024-07-24T06:44:23.000Z",
-        "artifact": "Build 85-2024-07-24-25bee9f",
-        "repo": "TalentSavvy-com/talentsavvy-fe",
-        "additional_info": "talentsavvy-fe-release"
-    },
-    {
-        "milestone": "Stage Deployment",
-        "timestamp": "2024-07-24T06:44:32.000Z",
-        "artifact": "Deployment Deployments-4947",
-        "repo": "Projects-6",
-        "additional_info": "Deploy to Stage succeeded for talentsavvy-fe release 1.11.85-2024-07-24-25bee9f to Stage"
-    },
-    {
-        "milestone": "Production Deployment",
-        "timestamp": "2024-07-24T07:04:18.000Z",
-        "artifact": "Deployment Deployments-4948",
-        "repo": "Projects-6",
-        "additional_info": "Deploy to Prod succeeded for talentsavvy-fe release 1.11.85-2024-07-24-25bee9f to Prod"
+        "milestone": "Work Item Closure",
+        "timestamp": "2024-07-23T05:09:06.987Z",
+        "artifact": "Work Item 2258",
+        "repo": null,
+        "additional_info": "Moved out of state Tested"
     }
 ]
